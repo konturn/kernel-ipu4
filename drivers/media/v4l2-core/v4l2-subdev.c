@@ -128,6 +128,9 @@ static inline int check_which(u32 which)
 	    which != V4L2_SUBDEV_FORMAT_ACTIVE)
 		return -EINVAL;
 
+	if (!(sd->flags & V4L2_SUBDEV_FL_HAS_SUBSTREAMS) && format->stream)
+		return -EINVAL;
+
 	return 0;
 }
 
@@ -188,9 +191,13 @@ static int call_enum_mbus_code(struct v4l2_subdev *sd,
 	if (!code)
 		return -EINVAL;
 
+	if (!(sd->flags & V4L2_SUBDEV_FL_HAS_SUBSTREAMS) && sel->stream)
+		return -EINVAL;
+
 	return check_which(code->which) ? : check_pad(sd, code->pad) ? :
 	       check_cfg(code->which, cfg) ? :
 	       sd->ops->pad->enum_mbus_code(sd, cfg, code);
+
 }
 
 static int call_enum_frame_size(struct v4l2_subdev *sd,
