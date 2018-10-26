@@ -1023,6 +1023,7 @@ struct v4l2_plane {
  *		buffers (when type != *_MPLANE); number of elements in the
  *		planes array for multi-plane buffers
  * @request_fd: fd of the request that this buffer should use
+* @request: this buffer should use this request
  *
  * Contains data exchanged by application and driver using one of the Streaming
  * I/O methods.
@@ -1054,6 +1055,7 @@ struct v4l2_buffer {
 	union {
 		__s32		request_fd;
 		__u32		reserved;
+	};
 	};
 };
 

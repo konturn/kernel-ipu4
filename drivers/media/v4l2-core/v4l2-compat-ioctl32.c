@@ -643,6 +643,7 @@ static int get_v4l2_buffer32(struct v4l2_buffer __user *p64,
 	u32 type;
 	u32 length;
 	s32 request_fd;
+	u32 request;
 	enum v4l2_memory memory;
 	struct v4l2_plane32 __user *uplane32;
 	struct v4l2_plane __user *uplane;
@@ -841,6 +842,7 @@ static int put_v4l2_buffer32(struct v4l2_buffer __user *p64,
 {
 	u32 type;
 	u32 length;
+	u32 request;
 	enum v4l2_memory memory;
 	struct v4l2_plane32 __user *uplane32;
 	struct v4l2_plane *uplane;
@@ -945,7 +947,9 @@ static int put_v4l2_buffer32_time32(struct v4l2_buffer_time32 __user *p64,
 	    assign_in_user(&p32->reserved2, &p64->reserved2) ||
 	    assign_in_user(&p32->request_fd, &p64->request_fd) ||
 	    get_user(length, &p64->length) ||
-	    put_user(length, &p32->length))
+	    put_user(length, &p32->length) ||
+	    get_user(request, &p64->length) ||
+	    put_user(request, &p32->length))
 		return -EFAULT;
 
 	if (V4L2_TYPE_IS_MULTIPLANAR(type)) {

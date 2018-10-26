@@ -579,6 +579,7 @@ struct vb2_queue {
 	unsigned int			uses_qbuf:1;
 	unsigned int			uses_requests:1;
 	unsigned int			allow_cache_hints:1;
+	unsigned int			allow_requests:1;
 
 	struct mutex			*lock;
 	void				*owner;
