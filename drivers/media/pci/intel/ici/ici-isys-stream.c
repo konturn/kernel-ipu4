@@ -1164,8 +1164,6 @@ static int stream_fop_open(struct inode *inode, struct file *file)
 
 	mutex_unlock(&isys->mutex);
 
-	strm_dev->virt_dev_id = -1;
-
 	return 0;
 
 out_lib_init:
