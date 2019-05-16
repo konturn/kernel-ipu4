@@ -21,7 +21,12 @@
 int intel_ipu4_virtio_msg_parse(struct ipu4_virtio_req_info *req_info)
 {
 	int ret = 0;
-	struct ipu4_virtio_req *req = req_info->request;
+	struct ipu4_virtio_req *req;
+
+	if (!req_info)
+		return -1;
+
+	req = req_info->request;
 
 	if (!req) {
 		pr_err("IPU mediator: request is NULL\n");
@@ -33,8 +38,7 @@ int intel_ipu4_virtio_msg_parse(struct ipu4_virtio_req_info *req_info)
 			return -EINVAL;
 	}
 
-	if (!req_info)
-		return -1;
+	req->stat = IPU4_REQ_PENDING;
 
 	switch (req->cmd) {
 	case IPU4_CMD_POLL:
@@ -248,6 +252,5 @@ int intel_ipu4_virtio_msg_parse(struct ipu4_virtio_req_info *req_info)
 			return -EINVAL;
 		}
 
-	req->stat = IPU4_REQ_PENDING;
 	return ret;
 }
