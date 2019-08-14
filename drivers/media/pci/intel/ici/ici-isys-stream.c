@@ -1219,6 +1219,7 @@ static int stream_fop_release(struct inode *inode, struct file *file)
 	}
 
 	mutex_unlock(&as->isys->mutex);
+	pm_runtime_put(&as->isys->adev->dev);
 
 	pm_runtime_put(&as->isys->adev->dev);
 	return ret;
