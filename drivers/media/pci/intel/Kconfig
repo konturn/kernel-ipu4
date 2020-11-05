@@ -7,23 +7,23 @@ config VIDEO_INTEL_IPU
 	select VIDEOBUF2_DMA_CONTIG
 	select PHYS_ADDR_T_64BIT
 	select COMMON_CLK
-	---help---
-	Say Y here!
+    help
+	  Say Y here!
 
 choice
 	prompt "intel ipu generation type"
 	depends on VIDEO_INTEL_IPU
-	default VIDEO_INTEL_IPU4
+	default VIDEO_INTEL_IPU4P
 
 config VIDEO_INTEL_IPU4
 	bool "Compile for IPU4 driver"
-	---help---
-	Say Y here!
+	help
+	  Say Y here!
 
 config VIDEO_INTEL_IPU4P
 	bool "Compile for IPU4P driver"
-	---help---
-	Say Y here!
+    help
+	  Say Y here!
 
 endchoice
 
@@ -34,15 +34,15 @@ choice
 
 config VIDEO_INTEL_IPU_SOC
 	bool "Compile for SOC"
-	---help---
-	Select for SOC platform
+    help
+	  Select for SOC platform
 
 endchoice
 
 config VIDEO_INTEL_IPU_FW_LIB
 	bool "Compile firmware library"
-	---help---
-	If selected, the firmware hostlib css would be compiled
+    help
+	  If selected, the firmware hostlib css would be compiled
 
 config VIDEO_INTEL_IPU_WERROR
 	bool "Force GCC to throw an error instead of a warning when compiling"
@@ -61,13 +61,13 @@ config VIDEO_INTEL_IPU_WERROR
 config VIDEO_INTEL_ICI
         depends on VIDEO_INTEL_IPU
         bool "Compile for ICI driver"
-        ---help---
-        If selected ICI driver will be compiled
+        help
+          If selected ICI driver will be compiled
 
 config VIDEO_INTEL_UOS
         bool "Compile driver per UOS"
-        ---help---
-        If selected UOS driver components will be compiled
+        help
+          If selected UOS driver components will be compiled
 
 config VIDEO_INTEL_IPU_ACRN
         depends on X86_64 && VIRTIO=y
@@ -81,12 +81,12 @@ choice
 config VIDEO_INTEL_IPU_VIRTIO_BE
     bool "Configure IPU4 as virtio backend"
     depends on VBS && VIDEO_INTEL_ICI
-        ---help---
-    Configuring IPU4 driver as virtio backend
+    help
+      Configuring IPU4 driver as virtio backend
 
 config VIDEO_INTEL_IPU_VIRTIO_FE
     bool "Configure IPU4 as virtio frontend"
-    ---help---
-    Configuring IPU4 driver as virtio frontend
+    help
+      Configuring IPU4 driver as virtio frontend
 
 endchoice
