@@ -1346,16 +1346,16 @@ static int get_v4l2_subdev_routing(struct v4l2_subdev_routing __user *kp,
 	compat_caddr_t p;
 	u32 num_routes;
 
-	if (!access_ok(VERIFY_READ, up, sizeof(*up)) ||
+	if (!access_ok(up, sizeof(*up)) ||
 	    get_user(p, &up->routes) ||
 	    put_user(compat_ptr(p), &kp->routes) ||
 	    get_user(num_routes, &kp->num_routes) ||
 	    assign_in_user(&kp->num_routes, &up->num_routes) ||
-	    !access_ok(VERIFY_READ, up->reserved, sizeof(*up->reserved)) ||
+	    !access_ok(up->reserved, sizeof(*up->reserved)) ||
 	    num_routes > U32_MAX / sizeof(*kp->routes))
 		return -EFAULT;
 
-	if (!access_ok(VERIFY_READ, compat_ptr(p),
+	if (!access_ok(compat_ptr(p),
 		       num_routes * (u32)sizeof(*kp->routes)))
 		return -EFAULT;
 
@@ -1369,16 +1369,16 @@ static int put_v4l2_subdev_routing(struct v4l2_subdev_routing __user *kp,
 	compat_caddr_t p;
 	u32 num_routes;
 
-	if (!access_ok(VERIFY_WRITE, up, sizeof(*up)) ||
+	if (!access_ok(up, sizeof(*up)) ||
 	    get_user(p, &up->routes) ||
 	    get_user(num_routes, &kp->num_routes) ||
 	    assign_in_user(&up->num_routes, &kp->num_routes) ||
-	    !access_ok(VERIFY_WRITE, up->reserved, sizeof(*up->reserved)))
+	    !access_ok(up->reserved, sizeof(*up->reserved)))
 		return -EFAULT;
 
 	uroutes = compat_ptr(p);
 
-	if (!access_ok(VERIFY_WRITE, uroutes,
+	if (!access_ok(uroutes,
 		       num_routes * sizeof(*kp->routes)))
 		return -EFAULT;
 
@@ -1583,10 +1583,6 @@ static long do_video_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 		compatible_arg = 0;
 		break;
 
-<<<<<<< HEAD
-	case VIDIOC_G_EDID32:
-	case VIDIOC_S_EDID32:
-=======
 	case VIDIOC_SUBDEV_G_ROUTING:
 	case VIDIOC_SUBDEV_S_ROUTING:
 		err = alloc_userspace(sizeof(struct v4l2_subdev_routing), 0, &new_p64);
@@ -1597,7 +1593,8 @@ static long do_video_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 
 	case VIDIOC_G_EDID:
 	case VIDIOC_S_EDID:
->>>>>>> a5d23def797b (v4l: subdev: Add [GS]_ROUTING subdev ioctls and operations)
+	case VIDIOC_G_EDID32:
+	case VIDIOC_S_EDID32:
 		err = alloc_userspace(sizeof(struct v4l2_edid), 0, &new_p64);
 		if (!err)
 			err = get_v4l2_edid32(new_p64, p32);

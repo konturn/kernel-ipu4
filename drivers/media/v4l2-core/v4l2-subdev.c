@@ -128,8 +128,6 @@ static inline int check_which(u32 which)
 	    which != V4L2_SUBDEV_FORMAT_ACTIVE)
 		return -EINVAL;
 
-	if (!(sd->flags & V4L2_SUBDEV_FL_HAS_SUBSTREAMS) && format->stream)
-		return -EINVAL;
 
 	return 0;
 }
@@ -164,6 +162,9 @@ static inline int check_format(struct v4l2_subdev *sd,
 	if (!format)
 		return -EINVAL;
 
+	if (!(sd->flags & V4L2_SUBDEV_FL_HAS_SUBSTREAMS) && format->stream)
+		return -EINVAL;
+
 	return check_which(format->which) ? : check_pad(sd, format->pad) ? :
 	       check_cfg(format->which, cfg);
 }
@@ -189,9 +190,6 @@ static int call_enum_mbus_code(struct v4l2_subdev *sd,
 			       struct v4l2_subdev_mbus_code_enum *code)
 {
 	if (!code)
-		return -EINVAL;
-
-	if (!(sd->flags & V4L2_SUBDEV_FL_HAS_SUBSTREAMS) && sel->stream)
 		return -EINVAL;
 
 	return check_which(code->which) ? : check_pad(sd, code->pad) ? :
@@ -253,6 +251,10 @@ static inline int check_selection(struct v4l2_subdev *sd,
 {
 	if (!sel)
 		return -EINVAL;
+
+	if (!(sd->flags & V4L2_SUBDEV_FL_HAS_SUBSTREAMS) && sel->stream)
+		return -EINVAL;
+
 
 	return check_which(sel->which) ? : check_pad(sd, sel->pad) ? :
 	       check_cfg(sel->which, cfg);
@@ -721,7 +723,6 @@ static long subdev_do_ioctl(struct file *file, unsigned int cmd, void *arg)
 
 		return rval;
 	}
-#endif
 	default:
 		return v4l2_subdev_call(sd, core, ioctl, cmd, arg);
 	}
