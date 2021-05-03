@@ -176,7 +176,6 @@ struct v4l2_subdev_selection {
 	__u32 reserved[7];
 };
 
-<<<<<<< HEAD
 /**
  * struct v4l2_subdev_capability - subdev capabilities
  * @version: the driver versioning number
@@ -191,7 +190,6 @@ struct v4l2_subdev_capability {
 
 /* The v4l2 sub-device video device node is registered in read-only mode. */
 #define V4L2_SUBDEV_CAP_RO_SUBDEV		BIT(0)
-=======
 #define V4L2_SUBDEV_ROUTE_FL_ACTIVE	(1 << 0)
 #define V4L2_SUBDEV_ROUTE_FL_IMMUTABLE	(1 << 1)
 #define V4L2_SUBDEV_ROUTE_FL_SOURCE	(1 << 2)
@@ -234,7 +232,6 @@ struct v4l2_subdev_routing {
 	__u32 num_routes;
 	__u32 reserved[5];
 };
->>>>>>> a5d23def797b (v4l: subdev: Add [GS]_ROUTING subdev ioctls and operations)
 
 /* Backwards compatibility define --- to be removed */
 #define v4l2_subdev_edid v4l2_edid

@@ -5,6 +5,7 @@
 
 #include <linux/device.h>
 #include <linux/dma-mapping.h>
+#include <linux/dma-map-ops.h>
 #include <linux/gfp.h>
 #include <linux/highmem.h>
 #include <linux/iommu.h>
@@ -201,13 +202,13 @@ static void *ipu_dma_alloc(struct device *dev, size_t size,
 			goto out_unmap;
 	}
 
-	area = __get_vm_area(size, 0, VMALLOC_START, VMALLOC_END);
+	area = get_vm_area(size, 0);
 	if (!area)
 		goto out_unmap;
 
 	area->pages = pages;
 
-	if (map_vm_area(area, PAGE_KERNEL, pages))
+	if (map_kernel_range((unsigned long)area->addr, size, PAGE_KERNEL, pages))
 		goto out_vunmap;
 
 	*dma_handle = iova->pfn_lo << PAGE_SHIFT;

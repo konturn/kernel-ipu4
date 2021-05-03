@@ -134,7 +134,7 @@ struct ipu_isys {
 	unsigned int pkg_dir_size;
 
 	struct list_head requests;
-	struct pm_qos_request pm_qos;
+	struct dev_pm_qos_request dev_pm_qos;
 	unsigned int short_packet_source;
 	struct ipu_isys_csi2_monitor_message *short_packet_trace_buffer;
 	dma_addr_t short_packet_trace_buffer_dma_addr;

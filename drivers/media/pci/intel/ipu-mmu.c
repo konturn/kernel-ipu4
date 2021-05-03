@@ -461,7 +461,7 @@ static int l2_map(struct iommu_domain *domain, unsigned long iova,
 }
 
 static int ipu_mmu_map(struct iommu_domain *domain, unsigned long iova,
-		       phys_addr_t paddr, size_t size, int prot)
+		       phys_addr_t paddr, size_t size, int prot, gfp_t gfp)
 {
 	u32 iova_start = round_down(iova, ISP_PAGE_SIZE);
 	u32 iova_end = ALIGN(iova + size, ISP_PAGE_SIZE);
@@ -511,7 +511,8 @@ static size_t l2_unmap(struct iommu_domain *domain, unsigned long iova,
 }
 
 static size_t ipu_mmu_unmap(struct iommu_domain *domain,
-			    unsigned long iova, size_t size)
+			    unsigned long iova, size_t size, 
+             struct iommu_iotlb_gather * iotlb_gather)
 {
 	return l2_unmap(domain, iova, 0, size);
 }
@@ -710,29 +711,29 @@ static void set_mapping(struct ipu_mmu *mmu, struct ipu_dma_mapping *dmap)
 	pm_runtime_put(mmu->dev);
 }
 
-static int ipu_mmu_add_device(struct device *dev)
-{
-	struct device *aiommu = to_ipu_bus_device(dev)->iommu;
-	struct ipu_dma_mapping *dmap;
-	int rval;
-
-	if (!aiommu || !dev->iommu_group)
-		return 0;
-
-	dmap = iommu_group_get_iommudata(dev->iommu_group);
-	if (!dmap)
-		return 0;
-
-	pr_debug("attach dev %s\n", dev_name(dev));
-
-	rval = iommu_attach_device(dmap->domain, dev);
-	if (rval)
-		return rval;
-
-	kref_get(&dmap->ref);
-
-	return 0;
-}
+//static int ipu_mmu_add_device(struct device *dev)
+//{
+//	struct device *aiommu = to_ipu_bus_device(dev)->iommu;
+//	struct ipu_dma_mapping *dmap;
+//	int rval;
+//
+//	if (!aiommu || !dev->iommu_group)
+//		return 0;
+//
+//	dmap = iommu_group_get_iommudata(dev->iommu_group);
+//	if (!dmap)
+//		return 0;
+//
+//	pr_debug("attach dev %s\n", dev_name(dev));
+//
+//	rval = iommu_attach_device(dmap->domain, dev);
+//	if (rval)
+//		return rval;
+//
+//	kref_get(&dmap->ref);
+//
+//	return 0;
+//}
 
 static struct iommu_ops ipu_iommu_ops = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
@@ -747,7 +748,7 @@ static struct iommu_ops ipu_iommu_ops = {
 	.map = ipu_mmu_map,
 	.unmap = ipu_mmu_unmap,
 	.iova_to_phys = ipu_mmu_iova_to_phys,
-	.add_device = ipu_mmu_add_device,
+	//.add_device = ipu_mmu_add_device,
 	.pgsize_bitmap = SZ_4K,
 };
 

@@ -1278,8 +1278,7 @@ ipu_isys_queue_short_packet_ready(struct ipu_isys_pipeline *ip,
 	spin_unlock_irqrestore(&ip->short_packet_queue_lock, flags);
 }
 
-void ipu_isys_req_free(struct media_device *mdev,
-		       struct media_device_request *req)
+void ipu_isys_req_free(struct media_device_request *req)
 {
 	struct ipu_isys_request *ireq = to_ipu_isys_request(req);
 
@@ -1367,8 +1366,7 @@ ipu_isys_req_dispatch(struct media_device *mdev,
 	WARN_ON(rval);
 }
 
-int ipu_isys_req_queue(struct media_device *mdev,
-		       struct media_device_request *req)
+void ipu_isys_req_queue(struct media_device_request *req)
 {
 	struct ipu_isys *isys = container_of(mdev, struct ipu_isys, media_dev);
 	struct ipu_isys_request *ireq = to_ipu_isys_request(req);
