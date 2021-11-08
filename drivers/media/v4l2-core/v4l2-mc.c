@@ -518,7 +518,7 @@ static int pipeline_pm_power(struct media_entity *entity, int change,
 	return ret;
 }
 
-static int v4l2_pipeline_pm_use(struct media_entity *entity, unsigned int use)
+int v4l2_pipeline_pm_use(struct media_entity *entity, unsigned int use)
 {
 	struct media_device *mdev = entity->graph_obj.mdev;
 	int change = use ? 1 : -1;

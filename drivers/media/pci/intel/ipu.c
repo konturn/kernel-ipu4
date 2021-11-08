@@ -12,6 +12,7 @@
 #include <linux/pm_runtime.h>
 #include <linux/timer.h>
 #include <linux/sched.h>
+//#include <linux/vmalloc.h>
 
 #include "ipu.h"
 #include "ipu-buttress.h"

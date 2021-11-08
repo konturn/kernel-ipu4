@@ -59,8 +59,7 @@ get_ipu_psys_command32(struct ipu_psys_command *kp,
 {
 	compat_uptr_t pgm, bufs;
 
-	if (!access_ok(VERIFY_READ, up,
-		       sizeof(struct ipu_psys_command32)) ||
+	if (!access_ok(up, sizeof(struct ipu_psys_command32)) ||
 	    get_user(kp->issue_id, &up->issue_id) ||
 	    get_user(kp->user_token, &up->user_token) ||
 	    get_user(kp->priority, &up->priority) ||
@@ -86,8 +85,7 @@ get_ipu_psys_buffer32(struct ipu_psys_buffer *kp,
 {
 	compat_uptr_t ptr;
 
-	if (!access_ok(VERIFY_READ, up,
-		       sizeof(struct ipu_psys_buffer32)) ||
+	if (!access_ok(up, sizeof(struct ipu_psys_buffer32)) ||
 	    get_user(kp->len, &up->len) ||
 	    get_user(ptr, &up->base.userptr) ||
 	    get_user(kp->data_offset, &up->data_offset) ||
@@ -104,8 +102,7 @@ static int
 put_ipu_psys_buffer32(struct ipu_psys_buffer *kp,
 		      struct ipu_psys_buffer32 __user *up)
 {
-	if (!access_ok(VERIFY_WRITE, up,
-		       sizeof(struct ipu_psys_buffer32)) ||
+	if (!access_ok(up, sizeof(struct ipu_psys_buffer32)) ||
 	    put_user(kp->len, &up->len) ||
 	    put_user(kp->base.fd, &up->base.fd) ||
 	    put_user(kp->data_offset, &up->data_offset) ||
@@ -122,8 +119,7 @@ get_ipu_psys_manifest32(struct ipu_psys_manifest *kp,
 {
 	compat_uptr_t ptr;
 
-	if (!access_ok(VERIFY_READ, up,
-		       sizeof(struct ipu_psys_manifest32)) ||
+	if (!access_ok(up, sizeof(struct ipu_psys_manifest32)) ||
 	    get_user(kp->index, &up->index) ||
 	    get_user(kp->size, &up->size) || get_user(ptr, &up->manifest))
 		return -EFAULT;
@@ -139,8 +135,7 @@ put_ipu_psys_manifest32(struct ipu_psys_manifest *kp,
 {
 	compat_uptr_t ptr = (u32)((unsigned long)kp->manifest);
 
-	if (!access_ok(VERIFY_WRITE, up,
-		       sizeof(struct ipu_psys_manifest32)) ||
+	if (!access_ok(up, sizeof(struct ipu_psys_manifest32)) ||
 	    put_user(kp->index, &up->index) ||
 	    put_user(kp->size, &up->size) || put_user(ptr, &up->manifest))
 		return -EFAULT;
@@ -203,11 +198,12 @@ long ipu_psys_compat_ioctl32(struct file *file, unsigned int cmd,
 	if (compatible_arg) {
 		err = native_ioctl(file, cmd, (unsigned long)up);
 	} else {
-		mm_segment_t old_fs = get_fs();
-
-		set_fs(KERNEL_DS);
-		err = native_ioctl(file, cmd, (unsigned long)&karg);
-		set_fs(old_fs);
+	   #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
+		   mm_segment_t old_fs = get_fs();
+		   set_fs(KERNEL_DS);
+		   err = native_ioctl(file, cmd, (unsigned long)&karg);
+		   set_fs(old_fs);
+      #endif
 	}
 
 	if (err)

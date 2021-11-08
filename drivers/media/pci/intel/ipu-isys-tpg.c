@@ -3,11 +3,13 @@
 
 #include <linux/device.h>
 #include <linux/module.h>
-#include <linux/crlmodule.h>
 
+#include <media/crlmodule.h>
 #include <media/media-entity.h>
 #include <media/v4l2-device.h>
 #include <media/v4l2-event.h>
+
+#include <uapi/linux/crlmodule.h>
 
 #include "ipu.h"
 #include "ipu-bus.h"

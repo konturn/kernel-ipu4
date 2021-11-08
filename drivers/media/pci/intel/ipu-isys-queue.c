@@ -7,6 +7,7 @@
 #include <linux/string.h>
 
 #include <media/media-entity.h>
+#include <media/media-request.h>
 #include <media/videobuf2-dma-contig.h>
 #include <media/v4l2-ioctl.h>
 
@@ -145,7 +146,7 @@ static int buf_prepare(struct vb2_buffer *vb)
 	struct ipu_isys_buffer *ib = vb2_buffer_to_ipu_isys_buffer(vb);
 	u32 request =
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
-	    to_vb2_v4l2_buffer(vb)->request;
+	    to_vb2_v4l2_buffer(vb)->request_fd;
 #else
 	    vb->v4l2_buf.request;
 #endif
@@ -158,7 +159,7 @@ static int buf_prepare(struct vb2_buffer *vb)
 		return -EIO;
 
 	if (request) {
-		ib->req = media_device_request_find(&av->isys->media_dev,
+		ib->req = media_request_find(&av->isys->media_dev,
 						    request);
 		if (!ib->req) {
 			dev_dbg(&av->isys->adev->dev,
@@ -178,11 +179,11 @@ static int buf_prepare(struct vb2_buffer *vb)
 	spin_lock_irqsave(&ireq->lock, flags);
 	spin_lock(&mdev->req_lock);
 	request_state = ib->req->state;
-	if (request_state == MEDIA_DEVICE_REQUEST_STATE_IDLE)
+	if (request_state == MEDIA_REQUEST_STATE_IDLE)
 		list_add(&ib->req_head, &ireq->buffers);
 	spin_unlock(&mdev->req_lock);
 	spin_unlock_irqrestore(&ireq->lock, flags);
-	if (request_state != MEDIA_DEVICE_REQUEST_STATE_IDLE) {
+	if (request_state != MEDIA_REQUEST_STATE_IDLE) {
 		dev_dbg(&av->isys->adev->dev,
 			"%s: request %u state %u\n", __func__, ib->req->id,
 			request_state);
@@ -196,7 +197,7 @@ static int buf_prepare(struct vb2_buffer *vb)
 		return 0;
 
 out_put_request:
-	media_device_request_put(ib->req);
+	media_request_put(ib->req);
 	ib->req = NULL;
 
 	return rval;
@@ -222,13 +223,13 @@ static void buf_finish(struct vb2_buffer *vb)
 		dev_dbg(&av->isys->adev->dev, "request %u complete %s\n",
 			ib->req->id, done ? "true" : "false");
 		if (done) {
-			media_device_request_complete(&av->isys->media_dev,
+			media_request_complete(&av->isys->media_dev,
 						      ib->req);
 			mutex_lock(&av->isys->stream_mutex);
 			list_del(&ireq->head);
 			mutex_unlock(&av->isys->stream_mutex);
 		}
-		media_device_request_put(ib->req);
+		media_request_put(ib->req);
 		ib->req = NULL;
 	}
 }
@@ -1278,7 +1279,7 @@ ipu_isys_queue_short_packet_ready(struct ipu_isys_pipeline *ip,
 	spin_unlock_irqrestore(&ip->short_packet_queue_lock, flags);
 }
 
-void ipu_isys_req_free(struct media_device_request *req)
+void ipu_isys_req_free(struct media_request *req)
 {
 	struct ipu_isys_request *ireq = to_ipu_isys_request(req);
 
@@ -1286,7 +1287,7 @@ void ipu_isys_req_free(struct media_device_request *req)
 }
 
 struct
-media_device_request *ipu_isys_req_alloc(struct media_device *mdev)
+media_request *ipu_isys_req_alloc(struct media_device *mdev)
 {
 	struct ipu_isys_request *ireq;
 
@@ -1308,7 +1309,7 @@ int ipu_isys_req_prepare(struct media_device *mdev,
 {
 	struct ipu_isys *isys =
 	    container_of(ip, struct ipu_isys_video, ip)->isys;
-	struct media_device_request *req = &ireq->req;
+	struct media_request *req = &ireq->req;
 	struct ipu_isys_buffer *ib;
 	unsigned long flags;
 
@@ -1366,9 +1367,9 @@ ipu_isys_req_dispatch(struct media_device *mdev,
 	WARN_ON(rval);
 }
 
-void ipu_isys_req_queue(struct media_device_request *req)
+void ipu_isys_req_queue(struct media_request *req)
 {
-	struct ipu_isys *isys = container_of(mdev, struct ipu_isys, media_dev);
+	struct ipu_isys *isys = container_of(req->mdev, struct ipu_isys, media_dev);
 	struct ipu_isys_request *ireq = to_ipu_isys_request(req);
 	struct ipu_isys_pipeline *ip;
 	struct ipu_isys_buffer *ib;
@@ -1445,13 +1446,13 @@ void ipu_isys_req_queue(struct media_device_request *req)
 
 		dev_dbg(&isys->adev->dev,
 			"request has a pipeline, dispatching\n");
-		rval = ipu_isys_req_prepare(mdev, ireq, ip, set);
+		rval = ipu_isys_req_prepare(req->mdev, ireq, ip, set);
 		if (rval)
 			goto out_mutex_unlock;
 
 		ipu_fw_isys_dump_frame_buff_set(&isys->adev->dev, set,
 						ip->nr_output_pins);
-		ipu_isys_req_dispatch(mdev, ireq, ip, set, to_dma_addr(msg));
+		ipu_isys_req_dispatch(req->mdev, ireq, ip, set, to_dma_addr(msg));
 	} else {
 		dev_dbg(&isys->adev->dev,
 			"%s: adding request %u to the mdev queue\n", __func__,
@@ -1463,12 +1464,8 @@ void ipu_isys_req_queue(struct media_device_request *req)
 out_mutex_unlock:
 	mutex_unlock(&isys->stream_mutex);
 
-	return rval;
-
 out_list_empty:
 	spin_unlock_irqrestore(&ireq->lock, flags);
-
-	return rval;
 }
 
 struct vb2_ops ipu_isys_queue_ops = {

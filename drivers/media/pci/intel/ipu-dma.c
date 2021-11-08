@@ -12,7 +12,7 @@
 #include <linux/iova.h>
 #include <linux/module.h>
 #include <linux/scatterlist.h>
-#include <linux/vmalloc.h>
+//#include <linux/vmalloc.h>
 
 #include "ipu-dma.h"
 #include "ipu-mmu.h"
@@ -449,3 +449,6 @@ const struct dma_map_ops ipu_dma_ops = {
 	.get_sgtable = ipu_dma_get_sgtable,
 };
 EXPORT_SYMBOL_GPL(ipu_dma_ops);
+EXPORT_SYMBOL_GPL(find_vm_area);
+EXPORT_SYMBOL_GPL(get_vm_area);
+EXPORT_SYMBOL_GPL(map_kernel_range);

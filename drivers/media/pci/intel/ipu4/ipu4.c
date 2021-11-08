@@ -6,6 +6,7 @@
 #include <linux/firmware.h>
 #include <linux/module.h>
 #include <linux/pm_runtime.h>
+#include <linux/vmalloc.h>
 
 #include "ipu.h"
 #include "ipu-cpd.h"

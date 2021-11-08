@@ -403,8 +403,6 @@ static int isa_config_buf_init(struct vb2_buffer *vb)
 	    vb2_buffer_to_ipu_isys_isa_buffer(vb);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 	struct dma_attrs attrs;
-#else
-	unsigned long attrs;
 #endif
 	int rval;
 
@@ -415,19 +413,16 @@ static int isa_config_buf_init(struct vb2_buffer *vb)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 	init_dma_attrs(&attrs);
 	dma_set_attr(DMA_ATTR_NON_CONSISTENT, &attrs);
-#else
-	attrs = DMA_ATTR_NON_CONSISTENT;
 #endif
 
 	isa_buf->pgl.common_pg =
-	    dma_alloc_attrs(&av->isys->adev->dev, PGL_SIZE << 1,
-			    &isa_buf->pgl.iova, GFP_KERNEL | __GFP_ZERO,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
-			    &attrs
+	    dma_alloc_attrs(&av->isys->adev->dev, PGL_SIZE << 1,
+			    &isa_buf->pgl.iova, GFP_KERNEL | __GFP_ZERO, &attrs);
 #else
-			    attrs
+	 (struct ia_css_process_group_light *) dma_alloc_pages(&av->isys->adev->dev, PGL_SIZE << 1,
+			    &isa_buf->pgl.iova, DMA_BIDIRECTIONAL,  GFP_KERNEL | __GFP_ZERO);
 #endif
-	    );
 
 	dev_dbg(&av->isys->adev->dev,
 		"buf_init: index %u, cpu addr %p, dma addr %pad\n",
@@ -454,8 +449,6 @@ static void isa_config_buf_cleanup(struct vb2_buffer *vb)
 	    vb2_buffer_to_ipu_isys_isa_buffer(vb);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 	struct dma_attrs attrs;
-#else
-	unsigned long attrs;
 #endif
 
 	dev_dbg(&av->isys->adev->dev,
@@ -472,18 +465,15 @@ static void isa_config_buf_cleanup(struct vb2_buffer *vb)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 	init_dma_attrs(&attrs);
 	dma_set_attr(DMA_ATTR_NON_CONSISTENT, &attrs);
-#else
-	attrs = DMA_ATTR_NON_CONSISTENT;
 #endif
 
-	dma_free_attrs(&av->isys->adev->dev, PGL_SIZE << 1,
-		       isa_buf->pgl.common_pg, isa_buf->pgl.iova,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
-		       &attrs
+	dma_free_attrs(&av->isys->adev->dev, PGL_SIZE << 1,
+		       isa_buf->pgl.common_pg, isa_buf->pgl.iova, &attrs);
 #else
-		       attrs
+	dma_free_pages(&av->isys->adev->dev, PGL_SIZE << 1,
+		       (struct page *)isa_buf->pgl.common_pg, isa_buf->pgl.iova, DMA_BIDIRECTIONAL);
 #endif
-	    );
 
 	isa_3a_buf_cleanup(vb);
 }

@@ -923,6 +923,7 @@ static int put_v4l2_buffer32_time32(struct v4l2_buffer_time32 __user *p64,
 {
 	u32 type;
 	u32 length;
+   u32 request;
 	enum v4l2_memory memory;
 	struct v4l2_plane32 __user *uplane32;
 	struct v4l2_plane *uplane;

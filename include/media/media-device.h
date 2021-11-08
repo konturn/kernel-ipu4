@@ -27,35 +27,6 @@ struct file;
 struct media_device;
 struct media_device_fh;
 
-enum media_device_request_state {
-	MEDIA_DEVICE_REQUEST_STATE_IDLE,
-	MEDIA_DEVICE_REQUEST_STATE_QUEUED,
-	MEDIA_DEVICE_REQUEST_STATE_DELETED,
-	MEDIA_DEVICE_REQUEST_STATE_COMPLETE,
-};
-
-/**
- * struct media_device_request - Media device request
- * @id: Request ID
- * @mdev: Media device this request belongs to
- * @kref: Reference count
- * @list: List entry in the media device requests list
- * @fh_list: List entry in the media file handle requests list
- * @state: The state of the request, MEDIA_DEVICE_REQUEST_STATE_*,
- *	   access to state serialised by mdev->req_lock
- * @flags: Request specific flags, MEDIA_REQ_FL_*
- */
-struct media_device_request {
-	u32 id;
-	struct media_device *mdev;
-	struct file *filp;
-	struct media_kevent *kev;
-	struct kref kref;
-	struct list_head list;
-	struct list_head fh_list;
-	enum media_device_request_state state;
-	u32 flags;
-};
 
 /**
  * struct media_entity_notify - Media Entity Notify
@@ -106,7 +77,7 @@ struct media_device_ops {
 	void (*req_free)(struct media_request *req);
 	int (*req_validate)(struct media_request *req);
 	void (*req_queue)(struct media_request *req);
-	int (*req_apply)(struct media_device_request *req);
+	int (*req_apply)(struct media_request *req);
 };
 
 struct media_kevent {
@@ -545,11 +516,11 @@ static inline void __media_device_usb_init(struct media_device *mdev,
 #define media_device_usb_init(mdev, udev, name) \
 	__media_device_usb_init(mdev, udev, name, KBUILD_MODNAME)
 
-struct media_device_request *
-media_device_request_find(struct media_device *mdev, u16 reqid);
-void media_device_request_get(struct media_device_request *req);
-void media_device_request_put(struct media_device_request *req);
-void media_device_request_complete(struct media_device *mdev,
-				   struct media_device_request *req);
+struct media_request *
+media_request_find(struct media_device *mdev, u16 reqid);
+//void media_request_get(struct media_request *req);
+//void media_request_put(struct media_request *req);
+void media_request_complete(struct media_device *mdev,
+				   struct media_request *req);
 
 #endif

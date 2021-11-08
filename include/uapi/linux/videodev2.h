@@ -1082,7 +1082,6 @@ struct v4l2_buffer {
 		__s32		request_fd;
 		__u32		reserved;
 	};
-	};
 };
 
 #ifndef __KERNEL__

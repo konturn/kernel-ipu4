@@ -100,9 +100,9 @@ struct ipu_psys_pg *__get_pg_buf(struct ipu_psys *psys, size_t pg_size)
 	if (!kpg)
 		return NULL;
 
-	kpg->pg = dma_alloc_attrs(&psys->adev->dev, pg_size,
-				  &kpg->pg_dma_addr, GFP_KERNEL,
-				  DMA_ATTR_NON_CONSISTENT);
+	kpg->pg = (struct ipu_fw_psys_process_group *)dma_alloc_pages(&psys->adev->dev, pg_size,
+				  &kpg->pg_dma_addr, DMA_BIDIRECTIONAL,
+				  GFP_KERNEL);
 	if (!kpg->pg) {
 		kfree(kpg);
 		return NULL;
@@ -175,7 +175,7 @@ static int ipu_psys_get_userpages(struct ipu_dma_buf_attach *attach)
 	if (!pages)
 		goto free_sgt;
 
-	down_read(&current->mm->mmap_sem);
+	down_read(&current->mm->mmap_lock);
 	vma = find_vma(current->mm, start);
 	if (!vma) {
 		ret = -EFAULT;
@@ -222,7 +222,7 @@ static int ipu_psys_get_userpages(struct ipu_dma_buf_attach *attach)
 		if (nr < npages)
 			goto error_up_read;
 	}
-	up_read(&current->mm->mmap_sem);
+	up_read(&current->mm->mmap_lock);
 
 	attach->pages = pages;
 	attach->npages = npages;
@@ -239,7 +239,7 @@ skip_pages:
 	return 0;
 
 error_up_read:
-	up_read(&current->mm->mmap_sem);
+	up_read(&current->mm->mmap_lock);
 error:
 	if (!attach->vma_is_io)
 		while (nr > 0)
@@ -369,10 +369,10 @@ static int ipu_dma_buf_mmap(struct dma_buf *dbuf, struct vm_area_struct *vma)
 	return -ENOTTY;
 }
 
-static void *ipu_dma_buf_kmap(struct dma_buf *dbuf, unsigned long pgnum)
-{
-	return NULL;
-}
+//static void *ipu_dma_buf_kmap(struct dma_buf *dbuf, unsigned long pgnum)
+//{
+//	return NULL;
+//}
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
 static void *ipu_dma_buf_kmap_atomic(struct dma_buf *dbuf, unsigned long pgnum)
@@ -421,7 +421,7 @@ static void *ipu_dma_buf_vmap(struct dma_buf *dmabuf)
 		return NULL;
 
 	return vm_map_ram(ipu_attach->pages,
-			  ipu_attach->npages, 0, PAGE_KERNEL);
+			  ipu_attach->npages, 0);
 }
 
 static void ipu_dma_buf_vunmap(struct dma_buf *dmabuf, void *vaddr)
@@ -453,7 +453,7 @@ struct dma_buf_ops ipu_dma_buf_ops = {
 	.kmap = ipu_dma_buf_kmap,
 	.kmap_atomic = ipu_dma_buf_kmap_atomic,
 #else
-	.map = ipu_dma_buf_kmap,
+	//.map = ipu_dma_buf_kmap,
 #endif
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
 	.map_atomic = ipu_dma_buf_kmap_atomic,
@@ -1407,7 +1407,8 @@ static int ipu_psys_probe(struct ipu_bus_device *adev)
 		kpg->pg = dma_alloc_attrs(&adev->dev,
 					  IPU_PSYS_PG_MAX_SIZE,
 					  &kpg->pg_dma_addr,
-					  GFP_KERNEL, DMA_ATTR_NON_CONSISTENT);
+                 DMA_BIDIRECTIONAL,
+					  GFP_KERNEL);
 		if (!kpg->pg) {
 			kfree(kpg);
 			goto out_free_pgs;
@@ -1476,8 +1477,8 @@ out_release_fw_com:
 	ipu_fw_com_release(psys->fwcom, 1);
 out_free_pgs:
 	list_for_each_entry_safe(kpg, kpg0, &psys->pgs, list) {
-		dma_free_attrs(&adev->dev, kpg->size, kpg->pg,
-			       kpg->pg_dma_addr, DMA_ATTR_NON_CONSISTENT);
+		dma_free_pages(&adev->dev, kpg->size, (struct page *)kpg->pg,
+			       kpg->pg_dma_addr, DMA_BIDIRECTIONAL);
 		kfree(kpg);
 	}
 
@@ -1528,8 +1529,8 @@ static void ipu_psys_remove(struct ipu_bus_device *adev)
 	mutex_lock(&ipu_psys_mutex);
 
 	list_for_each_entry_safe(kpg, kpg0, &psys->pgs, list) {
-		dma_free_attrs(&adev->dev, kpg->size, kpg->pg,
-			       kpg->pg_dma_addr, DMA_ATTR_NON_CONSISTENT);
+		dma_free_pages(&adev->dev, kpg->size, (struct page *)kpg->pg,
+			       kpg->pg_dma_addr, DMA_BIDIRECTIONAL);
 		kfree(kpg);
 	}
 

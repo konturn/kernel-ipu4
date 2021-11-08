@@ -70,6 +70,14 @@ struct media_request {
 	unsigned int num_incomplete_objects;
 	wait_queue_head_t poll_wait;
 	spinlock_t lock;
+
+        u32 id;
+        struct file *filp;
+        struct media_kevent *kev;
+        u32 flags;
+        struct list_head list;
+        struct list_head fh_list;
+
 };
 
 #ifdef CONFIG_MEDIA_CONTROLLER

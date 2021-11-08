@@ -133,6 +133,11 @@ int v4l2_create_fwnode_links_to_pad(struct v4l2_subdev *src_sd,
 int v4l2_create_fwnode_links(struct v4l2_subdev *src_sd,
 			     struct v4l2_subdev *sink_sd);
 
+
+
+//TODO: Document
+int v4l2_pipeline_pm_use(struct media_entity *entity, unsigned int use);
+
 /**
  * v4l2_pipeline_pm_get - Increase the use count of a pipeline
  * @entity: The root entity of a pipeline

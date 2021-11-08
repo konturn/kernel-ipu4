@@ -825,21 +825,18 @@ static void short_packet_queue_destroy(struct ipu_isys_pipeline *ip)
 	struct ipu_isys_video *av = container_of(ip, struct ipu_isys_video, ip);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 	struct dma_attrs attrs;
-#else
-	unsigned long attrs;
 #endif
 	unsigned int i;
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 	init_dma_attrs(&attrs);
 	dma_set_attr(DMA_ATTR_NON_CONSISTENT, &attrs);
-#else
-	attrs = DMA_ATTR_NON_CONSISTENT;
 #endif
 	if (!ip->short_packet_bufs)
 		return;
 	for (i = 0; i < IPU_ISYS_SHORT_PACKET_BUFFER_NUM; i++) {
 		if (ip->short_packet_bufs[i].buffer)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
 			dma_free_attrs(&av->isys->adev->dev,
 				       ip->short_packet_buffer_size,
 				       ip->short_packet_bufs[i].buffer,
@@ -849,7 +846,15 @@ static void short_packet_queue_destroy(struct ipu_isys_pipeline *ip)
 #else
 				       attrs
 #endif
+);
+#else
+			dma_free_pages(&av->isys->adev->dev,
+				       ip->short_packet_buffer_size,
+				       ip->short_packet_bufs[i].buffer,
+				       ip->short_packet_bufs[i].dma_addr,
+						 DMA_BIDIRECTIONAL
 			    );
+#endif
 	}
 	kfree(ip->short_packet_bufs);
 	ip->short_packet_bufs = NULL;
@@ -890,8 +895,6 @@ static int short_packet_queue_setup(struct ipu_isys_pipeline *ip)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 	init_dma_attrs(&attrs);
 	dma_set_attr(DMA_ATTR_NON_CONSISTENT, &attrs);
-#else
-	attrs = DMA_ATTR_NON_CONSISTENT;
 #endif
 
 	ip->short_packet_bufs =
@@ -1880,7 +1883,7 @@ int ipu_isys_video_init(struct ipu_isys_video *av,
 
 	mutex_lock(&av->mutex);
 
-	rval = video_register_device(&av->vdev, VFL_TYPE_GRABBER, -1);
+	rval = video_register_device(&av->vdev, VFL_TYPE_VIDEO, -1);
 	if (rval)
 		goto out_media_entity_cleanup;
 
@@ -1922,3 +1925,4 @@ void ipu_isys_video_cleanup(struct ipu_isys_video *av)
 	mutex_destroy(&av->mutex);
 	ipu_isys_queue_cleanup(&av->aq);
 }
+EXPORT_SYMBOL(v4l2_pipeline_pm_use);
