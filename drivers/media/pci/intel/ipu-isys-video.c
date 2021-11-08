@@ -1925,4 +1925,3 @@ void ipu_isys_video_cleanup(struct ipu_isys_video *av)
 	mutex_destroy(&av->mutex);
 	ipu_isys_queue_cleanup(&av->aq);
 }
-EXPORT_SYMBOL(v4l2_pipeline_pm_use);

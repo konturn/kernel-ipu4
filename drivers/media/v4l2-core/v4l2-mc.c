@@ -539,6 +539,7 @@ int v4l2_pipeline_pm_use(struct media_entity *entity, unsigned int use)
 
 	return ret;
 }
+EXPORT_SYMBOL(v4l2_pipeline_pm_use);
 
 int v4l2_pipeline_pm_get(struct media_entity *entity)
 {

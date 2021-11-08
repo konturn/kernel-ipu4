@@ -326,6 +326,7 @@ int map_kernel_range(unsigned long start, unsigned long size, pgprot_t prot,
 	flush_cache_vmap(start, start + size);
 	return ret;
 }
+EXPORT_SYMBOL(map_kernel_range);
 
 int is_vmalloc_or_module_addr(const void *x)
 {
@@ -2115,6 +2116,7 @@ struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
 				  NUMA_NO_NODE, GFP_KERNEL,
 				  __builtin_return_address(0));
 }
+EXPORT_SYMBOL(get_vm_area);
 
 struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
 				const void *caller)
@@ -2143,6 +2145,7 @@ struct vm_struct *find_vm_area(const void *addr)
 
 	return va->vm;
 }
+EXPORT_SYMBOL(find_vm_area);
 
 /**
  * remove_vm_area - find and remove a continuous kernel virtual area
